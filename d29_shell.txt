@@ -1,0 +1,179 @@
+Команды Shell к заданию D-2-19.
+
+1. Создаем 4 пользователя.
+
+writer1 = User.objects.create_user(username = 'Первый автор')
+writer2 = User.objects.create_user(username = 'Второй автор')
+reader1 = User.objects.create_user(username = 'Первый читатель')
+reader2 = User.objects.create_user(username = 'Второй читатель')
+
+2. Два пользователя становятся авторами.
+
+author1 = Author.objects.create(user=writer1)
+author2 = Author.objects.create(user=writer2)
+
+3. Создаем 4 категории.
+
+cat1 = Category.objects.create(name = 'Тема1')
+cat2 = Category.objects.create(name = 'Тема2')
+cat3 = Category.objects.create(name = 'Тема3')
+cat4 = Category.objects.create(name = 'Тема4')
+
+4. Создаем 2 статьи.
+
+some_text = 'Это хорошая статья. Она всем нравится, ее все лайкают.'
+
+article1 = Post.objects.create(author = author1, post_type = 'AR', title = 'Хорошая статья', text = some_text)
+
+some_text = 'Эта статься похуже. Кому-то она нравится, а кому-то нет.'
+
+article = Post.objects.create(author = author2, post_type = 'AR', title = 'Статья похуже', text = some_text)
+
+Создаем хорошую новость.
+
+some_text = 'В жизни есть и кое-что хорошее'
+
+news1 = Post.objects.create(author = author1, post_type = 'NW', title = 'Хорошая новость', text = some_text)
+
+Создаем плохую новость.
+
+some_text = 'Но порой случается и кое-что плохое'
+
+news2 = Post.objects.create(author = author2, post_type = 'NW', title = 'Плохая новость', text = some_text)
+
+5. Присваиваем статьям и новостям категории.
+
+article1.category.add(cat1)
+article1.category.add(cat2)
+article2.category.add(cat3)
+article2.category.add(cat4)
+
+news1.category.add(cat1)
+news2.category.add(cat2)
+
+
+6. Теперь читатели начинают писать комментарии.
+
+reader1 = User.objects.get(id=4)
+reader2 = User.objects.get(id=5)
+
+Все пишут хорошие отзывы на первую статью и всячески ее лайкают.
+
+article1 = Post.objects.get(id=1)
+Comment.objects.create(post = article1, comment_author = reader1, text = 'Понравилось')
+article1.like()
+Comment.objects.create(post = article1, comment_author = reader2, text = 'Очень понравилось')
+article1.like()
+
+Ко второй статье все по-разному относятся.
+
+article2 = Post.objects.get(id=2)
+Comment.objects.create(post = article2, comment_author = reader1, text = 'Понравилось')
+article2.like()
+Comment.objects.create(post = article2, comment_author = reader2, text = 'Не понравилось')
+article2.dislike()
+
+Авторы тоже пишут комментарии.
+
+writer1 = User.objects.get(id=2)
+Comment.objects.create(post = article2, comment_author = writer1, text = 'Неубедительно')
+
+writer2 = User.objects.get(id=3)
+Comment.objects.create(post = article1, comment_author = writer2, text = 'Бездоказательно')
+article1.dislike()
+
+Комментируют и новости.
+
+news1 = Post.objects.get(id=3)
+news2 = Post.objects.get(id=4)
+
+Comment.objects.create(post = news1, comment_author = reader1, text = 'Только хочется больше')
+news1.like()
+
+Comment.objects.create(post = news1, comment_author = reader2, text = 'Только хочется чаще')
+news1.like()
+
+Comment.objects.create(post = news2, comment_author = reader1, text = 'Бывает и хуже, хотя и реже')
+news2.like()
+
+Comment.objects.create(post = news2, comment_author = reader2, text = 'Вот удивил! А то мы не знаем.')
+news2.dislike()
+
+7. Все вовсю лайкают, дислайкают. 
+
+8. Обновляем рейтинги авторов.
+
+for a in Author.objects.all(): a.update_rating()
+
+9. Выводим данные лучшего автора.
+
+Создаем список авторов, упорядоченный по рейтингам.
+
+author_by_rate = Author.objects.order_by('-rating')
+
+Берем лучшего.
+
+best_author = author_by_rate[0]
+
+>>> best_author = author_by_rate[0]
+>>> best_author.user.username
+'Первый автор'
+>>> best_author.rating
+6
+
+10. Выводим дату добавления, username автора, рейтинг, заголовок и превью лучшей статьи
+
+Берем статьи
+
+>>> articles = Post.objects.all().filter(post_type = ARTICLE)
+>>> articles
+<QuerySet [<Post: Статья "Хорошая статья">, <Post: Статья "Статья похуже">]>
+
+Сортируем по рейтингу
+
+>>> articles_by_rate = articles.order_by('-rating')
+
+Берем лучшую
+
+>>> best_article = articles_by_rate[0]
+
+Выводим данные, используя заранее написанный метод.
+
+>>> best_article.post_info('Лучшая статья')
+Лучшая статья
+Название        : Хорошая статья
+Рейтинг         : 2
+Coздано         : 2021-11-16 17:36:36.370902+00:00
+Автор           : Первый автор
+Рейтинг     	: 6
+Превью          : Это хорошая статья. Она всем нравится, ее все лайкают....
+
+11. Выводим все комментарии к лучшей статье. Испольуем заранее написанный метод.
+
+>>> best_article.comment_list()
+Комментарии к статье "Хорошая статья"
+Понравилось
+Очень понравилось
+Бездоказательно
+
+
+
+ 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
